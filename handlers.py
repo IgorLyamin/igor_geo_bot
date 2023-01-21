@@ -128,7 +128,7 @@ def say_hello(update, context):
 
 def get_nearest_moscow_park(coords):
 
-    path = "geo_data/moscow_parks.geojson"
+    path = "moscow_parks.geojson"
 
     with open(path, "r", encoding="utf8") as file:
         df = gp.read_file(file)
@@ -147,7 +147,7 @@ def get_nearest_moscow_park(coords):
 
 def get_nearest_moscow_metro(coords):
 
-        df_stations = pd.read_csv('geo_data/moscow_metro_stations.csv')
+        df_stations = pd.read_csv('moscow_metro_stations.csv')
         df_stations_gdf = gp.GeoDataFrame(df_stations, geometry=gp.points_from_xy(df_stations.Longitude, df_stations.Latitude))
 
         tree = STRtree(df_stations_gdf['geometry'])
@@ -155,11 +155,8 @@ def get_nearest_moscow_metro(coords):
         coords_1 = Point(float(coords.split(" ")[0]), float(coords.split(" ")[1]))
         coords_2 = df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['geometry']
 
-
-        # dist = round(mpu.haversine_distance((coords_1.x, coords_1.y), (float(coords_2.x), float(coords_2.y))), 1)
-        dist = 1
-        # closest_metro = df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['Name'].iloc[0]
-        closest_metro = 1
+        dist = round(mpu.haversine_distance((coords_1.x, coords_1.y), (float(coords_2.x), float(coords_2.y))), 1)
+        closest_metro = df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['Name'].iloc[0]
 
         return closest_metro, dist, coords_2
 
