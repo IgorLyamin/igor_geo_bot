@@ -157,8 +157,9 @@ def get_nearest_moscow_metro(coords):
 
         # dist = round(mpu.haversine_distance((coords_1.x, coords_1.y), (float(coords_2.x), float(coords_2.y))), 1)
         dist = 1
-        closest_metro = df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['Name'].iloc[0]
-        
+        # closest_metro = df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['Name'].iloc[0]
+        closest_metro = 1
+
         return closest_metro, dist, coords_2
 
 
