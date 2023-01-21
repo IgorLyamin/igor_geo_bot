@@ -34,6 +34,7 @@ def full_reply(update, context):
 
     # Расстояние до ближайшего метро пешком
     coords_address = get_coords(coords)
+    print('coords_nearest_metro ', coords_nearest_metro)
     coords_metro = [coords_nearest_metro.x.iloc[0], coords_nearest_metro.y.iloc[0]]
 
     walk_dist, walk_hours, walk_minutes = get_journey_time([coords_address, coords_metro], 'man')
