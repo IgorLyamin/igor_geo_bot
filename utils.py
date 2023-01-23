@@ -3,7 +3,7 @@ from telegram import ReplyKeyboardMarkup
 
 def get_kb():
     btns = [
-        ['Добавить слой', 'Контакты админа'],
-        # ['Контакты админа']
+        ['Метро', 'Центр', 'Парк'],
+        ['Старт']
     ]
     return ReplyKeyboardMarkup(btns, resize_keyboard=True)
