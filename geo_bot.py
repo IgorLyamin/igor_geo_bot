@@ -10,7 +10,7 @@ def main():
 
     dp = bot.dispatcher
     dp.add_handler(CommandHandler('start', say_hello))
-    dp.add_handler(MessageHandler(Filters.regex('^(Добавить слой)$'), say_hello))
+    # dp.add_handler(MessageHandler(Filters.regex('^(Добавить слой)$'), say_hello))
 
     dp.add_handler(MessageHandler(Filters.text, full_reply))
 

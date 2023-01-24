@@ -10,10 +10,22 @@ import mpu
 
 
 def get_direct_distance(coords_1, coords_2):
-    print(coords_1)
-    print(coords_2)
     return round(mpu.haversine_distance((float(coords_1.x), float(coords_1.y)), (float(coords_2.x), float(coords_2.y))), 1)
 
+def get_nearest_moscow_metro(coords):
+
+        df_stations = pd.read_csv('moscow_metro_stations.csv')
+        df_stations_gdf = gp.GeoDataFrame(df_stations, geometry=gp.points_from_xy(df_stations.Longitude, df_stations.Latitude))
+
+        tree = STRtree(df_stations_gdf['geometry'])
+
+        coords_1 = Point(float(coords.split(" ")[0]), float(coords.split(" ")[1]))
+        coords_2 = (df_stations_gdf[df_stations_gdf.index== tree.nearest(coords_1)]['geometry']).ravel()[0]
+
+        dist = get_direct_distance(coords_1, coords_2)
+        closest_metro = (df_stations_gdf[df_stations_gdf.index == tree.nearest(coords_1)]['Name']).ravel()[0]
+
+        return closest_metro, dist, coords_2
 
 def get_coords(coords):
     coords_address = map(float, coords.split())
@@ -42,8 +54,9 @@ def full_reply(update, context):
     closest_metro, dist, coords_nearest_metro = get_nearest_moscow_metro(coords)
 
     # Расстояние до ближайшего метро пешком
+
     coords_address = get_coords(coords)
-    coords_metro = [coords_nearest_metro.x.iloc[0], coords_nearest_metro.y.iloc[0]]
+    coords_metro = [coords_nearest_metro.x, coords_nearest_metro.y]
 
     walk_dist, walk_hours, walk_minutes = get_journey_time([coords_address, coords_metro], 'man')
 
@@ -137,7 +150,7 @@ def return_map_image(coords):
 def say_hello(update, context):
     username = update.message.chat.username
     update.message.reply_text(
-        f'Приветствую, {username.capitalize()}! Я умею оценивать расположения домов в Москве относительно ближайшего метро, парка и удаления от центра. Выберите в порядке убывания важности для вас объекты и нажмите кнопку старт. По умолчанию приоритизация: расстояние до центра, метро, парк.',
+        f'Приветствую, {username.capitalize()}! Я умею оценивать расположения домов в Москве относительно ближайшего метро, парка и удаления от центра.',
         reply_markup=get_kb()
         )
 
@@ -158,24 +171,6 @@ def get_nearest_moscow_park(coords):
 
     # TODO есть расстояние между точкой и полигоном, надо найти координаты ближайшей точки на полигоне
     return nearest_park_name, round(nearest_park_distance * 10**2, 1)
-
-
-def get_nearest_moscow_metro(coords):
-
-        df_stations = pd.read_csv('moscow_metro_stations.csv')
-        df_stations_gdf = gp.GeoDataFrame(df_stations, geometry=gp.points_from_xy(df_stations.Longitude, df_stations.Latitude))
-
-        tree = STRtree(df_stations_gdf['geometry'])
-
-        coords_1 = Point(float(coords.split(" ")[0]), float(coords.split(" ")[1]))
-        coords_2 = (df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['geometry'])
-
-        # print('coords_2', coords_2)
-        # print(type(coords_2))
-        dist = get_direct_distance(coords_1, coords_2)
-        closest_metro = df_stations_gdf[df_stations_gdf['geometry'] == tree.nearest(coords_1)]['Name'].iloc[0]
-
-        return closest_metro, dist, coords_2
 
 
 def get_total_score(distance):
