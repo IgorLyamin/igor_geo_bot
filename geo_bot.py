@@ -3,6 +3,9 @@ from jobs import update_json
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from handlers import say_hello, full_reply
 from datetime import time
+# запуск на github
+# telebot посмотреть
+# polog - логировани
 
 
 def main():

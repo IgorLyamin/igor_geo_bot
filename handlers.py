@@ -10,7 +10,7 @@ import mpu
 
 
 def get_direct_distance(coords_1, coords_2):
-    return round(mpu.haversine_distance((float(coords_1.x), float(coords_1.y)), (float(coords_2.x), float(coords_2.y))), 1)
+    return mpu.haversine_distance((float(coords_1.x), float(coords_1.y)), (float(coords_2.x), float(coords_2.y)))
 
 def get_nearest_moscow_metro(coords):
 
@@ -25,15 +25,17 @@ def get_nearest_moscow_metro(coords):
         dist = get_direct_distance(coords_1, coords_2)
         closest_metro = (df_stations_gdf[df_stations_gdf.index == tree.nearest(coords_1)]['Name']).ravel()[0]
 
+        # print('!!! ', coords_1, coords_2)
+
         return closest_metro, dist, coords_2
 
 def get_coords(coords):
     coords_address = map(float, coords.split())
     return list(coords_address)
 
-
 def get_response(url, params=None):
     response = requests.get(url, params=params)
+    
     if not response:
         print("Ошибка выполнения запроса:")
         print(url)
@@ -45,7 +47,7 @@ def get_response(url, params=None):
 #     ['Метро', 'Центр', 'Парк']
 
 def full_reply(update, context):
-    address = update.message.text
+    address = 'Москва ' + update.message.text
 
     # Возвращает координаты адреса по яндекс api
     coords, full_address = return_coords(address)
@@ -54,7 +56,6 @@ def full_reply(update, context):
     closest_metro, dist, coords_nearest_metro = get_nearest_moscow_metro(coords)
 
     # Расстояние до ближайшего метро пешком
-
     coords_address = get_coords(coords)
     coords_metro = [coords_nearest_metro.x, coords_nearest_metro.y]
 
@@ -65,20 +66,21 @@ def full_reply(update, context):
     
     # Расстояние до ближайшего парка пешком
 
+
     # Расстояние до центра Москвы    
     msk_cent_coords = Point(37.617592, 55.755922)
     msk_cent_dist = get_direct_distance(Point(float(coords.split(" ")[0]), float(coords.split(" ")[1])), msk_cent_coords)
 
     # Полная строка текстового ответа
     # Координаты: {coords}.
-    update.message.reply_text(f"Полный адрес: {full_address}. Ближайшая станция метро - {closest_metro}, расстояние до неё по прямой {dist} км. Пешком до метро {walk_dist} км, время в пути {walk_hours} ч {walk_minutes} мин. Ближайший парк - {nearest_park_name}, расстояние до неё по прямой {nearest_park_distance} км. Расстояние по прямой до центра Москвы {msk_cent_dist} км.")
+    update.message.reply_text(f"Полный адрес: {full_address}. Ближайшая станция метро - {closest_metro}, по прямой до нее {round(dist, 2)} км, пешком до неё {walk_dist} км, время в пути {walk_hours} ч {walk_minutes} мин. Ближайший парк - {nearest_park_name}, расстояние до неё по прямой {nearest_park_distance} км. Расстояние по прямой до центра Москвы {round(msk_cent_dist, 2)} км.")
 
     # Отправка картинки с картой
     return_map_image(coords)
     context.bot.send_photo(update.message.chat.id, photo=open('response.jpg', 'rb'))
 
     # Общий score адреса    
-    total_score = (0.3 * get_total_score(dist) + 0.2 * get_total_score(nearest_park_distance) + 0.5 * get_total_score(msk_cent_dist / 10))
+    total_score = (0.3 * get_total_score(walk_dist) + 0.2 * get_total_score(nearest_park_distance) + 0.5 * get_total_score(msk_cent_dist / 10))
     update.message.reply_text(f"Общий рейтинг данной локации {round(total_score, 1)} из 10.")
 
 def get_journey_time(coords, type_):
@@ -150,7 +152,7 @@ def return_map_image(coords):
 def say_hello(update, context):
     username = update.message.chat.username
     update.message.reply_text(
-        f'Приветствую, {username.capitalize()}! Я умею оценивать расположения домов в Москве относительно ближайшего метро, парка и удаления от центра.',
+        f'Приветствую, {username.capitalize()}! Я умею оценивать расположения домов в Москве относительно ближайшего метро, парка и удаления от центра. Введите интересующий Вас адрес.',
         reply_markup=get_kb()
         )
 
